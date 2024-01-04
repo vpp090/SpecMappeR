@@ -20,6 +20,7 @@
     <PackageLicenseFile>license.txt</PackageLicenseFile>
     <AssemblyVersion>1.1.0</AssemblyVersion>
     <FileVersion>1.1.0</FileVersion>
+	<PackageProjectUrl>https://github.com/vpp090/SpecMappeR</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>
