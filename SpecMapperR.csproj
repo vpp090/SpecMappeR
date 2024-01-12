@@ -7,20 +7,21 @@
     <Title>SpecMappeR</Title>
     <PackageId>SpecMappeR</PackageId>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>1.1.2</Version>
+    <Version>2.2.0</Version>
     <Authors>vpp090</Authors>
     <Company>vpp090</Company>
     <Product>SpecMappeR</Product>
-    <Description>Mapping the properties of two objects.</Description>
+    <Description>Mapping the properties of two objects recursively.</Description>
     <PackageIcon>mapi.png</PackageIcon>
     <PackageTags>mapper;c#;c# mapper;c# objects;objects</PackageTags>
-    <PackageReleaseNotes>The mapper now supports dependency injection.</PackageReleaseNotes>
+    <PackageReleaseNotes>Major improvements, the object is initialized automatically, the properties are mapped recursively.</PackageReleaseNotes>
     <PackageReadmeFile>readme.md</PackageReadmeFile>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <PackageLicenseFile>license.txt</PackageLicenseFile>
-    <AssemblyVersion>1.1.0</AssemblyVersion>
-    <FileVersion>1.1.0</FileVersion>
+    <AssemblyVersion>2.2.0</AssemblyVersion>
+    <FileVersion>2.2.0</FileVersion>
 	<PackageProjectUrl>https://github.com/vpp090/SpecMappeR</PackageProjectUrl>
+	<RepositoryType>https://github.com/vpp090/SpecMappeR</RepositoryType>
   </PropertyGroup>
 
   <ItemGroup>
@@ -36,6 +37,10 @@
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
   </ItemGroup>
 
 </Project>
