@@ -3,4 +3,4 @@ A Nuget package with a mapper that maps the properties of two objects recursivel
 
 Nuget Package: https://www.nuget.org/packages/SpecMappeR/2.2.0
 
-If you would like to support the development of this mapper: revolut.me/vpp090
+If you would like to support the development of this mapper: https://revolut.me/vpp090
