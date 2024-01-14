@@ -7,7 +7,7 @@
     <Title>SpecMappeR</Title>
     <PackageId>SpecMappeR</PackageId>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>2.2.0</Version>
+    <Version>2.3.0</Version>
     <Authors>vpp090</Authors>
     <Company>vpp090</Company>
     <Product>SpecMappeR</Product>
@@ -18,8 +18,8 @@
     <PackageReadmeFile>readme.md</PackageReadmeFile>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <PackageLicenseFile>license.txt</PackageLicenseFile>
-    <AssemblyVersion>2.2.0</AssemblyVersion>
-    <FileVersion>2.2.0</FileVersion>
+    <AssemblyVersion>2.3.0</AssemblyVersion>
+    <FileVersion>2.3.0</FileVersion>
 	<PackageProjectUrl>https://github.com/vpp090/SpecMappeR</PackageProjectUrl>
 	<RepositoryType>https://github.com/vpp090/SpecMappeR</RepositoryType>
   </PropertyGroup>
