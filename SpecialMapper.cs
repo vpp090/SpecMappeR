@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.Intrinsics.X86;
 
 namespace SpecMapperR
 {
@@ -25,54 +26,27 @@ namespace SpecMapperR
                 var matchingProp = destProps.FirstOrDefault(p => p.Name == sourceProp.Name);
                 if (matchingProp != null)
                 {
-                    try
+                    var (isCollection, elementType) = IsCollectionType(sourceProp.PropertyType);
+                    if (isCollection)
                     {
-                        if (IsSimpleType(matchingProp.PropertyType))
-                        {
-                            var value = sourceProp.GetValue(source);
-                            matchingProp.SetValue(dest, value);
-                        }
-                        else if (IsIListType(sourceProp.PropertyType))
-                        {
-                            var sourceList = sourceProp.GetValue(source) as IEnumerable;
-                            if (sourceList == null) throw new ArgumentException("source is null");
-
-                            // Determine the element type for the destination list
-                            Type elementType;
-                            if (matchingProp.PropertyType.IsGenericType)
-                            {
-                                // If the destination list type is generic, get its generic argument
-                                elementType = matchingProp.PropertyType.GetGenericArguments()[0];
-                            }
-                            else
-                            {
-                                // For non-generic lists, use object as the element type
-                                elementType = typeof(object);
-                            }
-
-                            // Create an instance of List<elementType>
-                            var destListType = typeof(List<>).MakeGenericType(elementType);
-                            var destList = (IList)Activator.CreateInstance(destListType);
-
-                            // Populate the list
-                            foreach (var item in sourceList)
-                            {
-                                var destItem = IsSimpleType(elementType) ? item : MapPropertiesRecursive(item, elementType);
-                                destList.Add(destItem);
-                            }
-
-                            matchingProp.SetValue(dest, destList);
-                        }
-                        else
-                        {
-                            var nestedSourceValue = sourceProp.GetValue(source);
-                            var nestedDestValue = MapPropertiesRecursive(nestedSourceValue, matchingProp.PropertyType);
-                            matchingProp.SetValue(dest, nestedDestValue);
-                        }
+                        // Handle collection types
+                        var collection = HandleCollection(sourceProp.GetValue(source), elementType);
+                        matchingProp.SetValue(dest, collection);
                     }
-                    catch (Exception)
+                    else if (IsSimpleType(sourceProp.PropertyType))
                     {
-                        throw;
+                        // Handle simple types
+                        var value = sourceProp.GetValue(source);
+                        matchingProp.SetValue(dest, value);
+                    }
+                    else
+                    {
+                        // Handle complex types
+                        var nestedSourceValue = sourceProp.GetValue(source);
+                        var nestedDestValue = MapPropertiesRecursive(nestedSourceValue, matchingProp.PropertyType);
+                        matchingProp.SetValue(dest, nestedDestValue);
+
+                       
                     }
                 }
             }
@@ -80,14 +54,47 @@ namespace SpecMapperR
             return dest;
         }
 
-        private bool IsSimpleType(Type type)
+        private object HandleCollection(object sourceCollection, Type elementType)
         {
-            return type.IsPrimitive || type.IsEnum || type.Equals(typeof(string)) || type.Equals(typeof(decimal));
+            if (sourceCollection == null) return null;
+
+            // Determine the type of collection to create (e.g., List<elementType>, HashSet<elementType>, etc.)
+            Type collectionType = typeof(List<>).MakeGenericType(elementType);
+            var destCollection = Activator.CreateInstance(collectionType) as IList;
+
+            // Iterate through each item in the source collection and add to the destination collection
+            foreach (var item in (IEnumerable)sourceCollection)
+            {
+                var destItem = IsSimpleType(elementType) ? item : MapPropertiesRecursive(item, elementType);
+                destCollection?.Add(destItem);
+            }
+
+            return destCollection;
         }
 
-        private bool IsIListType(Type type)
+        private bool IsSimpleType(Type type)
         {
-            return typeof(IList<>).IsAssignableFrom(type) && type.IsGenericType;
+            return type.IsPrimitive || type.IsEnum || type.Equals(typeof(string)) || type.Equals(typeof(decimal)) || type.IsValueType;
+        }
+
+        private (bool, Type) IsCollectionType(Type type)
+        {
+            // String is IEnumerable, but we don't want to treat it as a collection here
+            if (type == typeof(string))
+                return (false, null);
+
+            // Check if this is an IEnumerable type
+            if (typeof(IEnumerable).IsAssignableFrom(type))
+            {
+                // Get the generic type of the collection
+                var elementType = type.IsGenericType
+                    ? type.GetGenericArguments()[0]
+                    : type.GetElementType(); // for arrays
+
+                return (true, elementType);
+            }
+
+            return (false, null);
         }
     }
 }
