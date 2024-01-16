@@ -1,4 +1,6 @@
-﻿using System.Reflection;
+﻿using System.Collections;
+using System.Linq.Expressions;
+using System.Reflection;
 
 namespace SpecMapperR
 {
@@ -30,6 +32,37 @@ namespace SpecMapperR
                             var value = sourceProp.GetValue(source);
                             matchingProp.SetValue(dest, value);
                         }
+                        else if (IsIListType(sourceProp.PropertyType))
+                        {
+                            var sourceList = sourceProp.GetValue(source) as IEnumerable;
+                            if (sourceList == null) throw new ArgumentException("source is null");
+
+                            // Determine the element type for the destination list
+                            Type elementType;
+                            if (matchingProp.PropertyType.IsGenericType)
+                            {
+                                // If the destination list type is generic, get its generic argument
+                                elementType = matchingProp.PropertyType.GetGenericArguments()[0];
+                            }
+                            else
+                            {
+                                // For non-generic lists, use object as the element type
+                                elementType = typeof(object);
+                            }
+
+                            // Create an instance of List<elementType>
+                            var destListType = typeof(List<>).MakeGenericType(elementType);
+                            var destList = (IList)Activator.CreateInstance(destListType);
+
+                            // Populate the list
+                            foreach (var item in sourceList)
+                            {
+                                var destItem = IsSimpleType(elementType) ? item : MapPropertiesRecursive(item, elementType);
+                                destList.Add(destItem);
+                            }
+
+                            matchingProp.SetValue(dest, destList);
+                        }
                         else
                         {
                             var nestedSourceValue = sourceProp.GetValue(source);
@@ -50,6 +83,11 @@ namespace SpecMapperR
         private bool IsSimpleType(Type type)
         {
             return type.IsPrimitive || type.IsEnum || type.Equals(typeof(string)) || type.Equals(typeof(decimal));
+        }
+
+        private bool IsIListType(Type type)
+        {
+            return typeof(IList<>).IsAssignableFrom(type) && type.IsGenericType;
         }
     }
 }
